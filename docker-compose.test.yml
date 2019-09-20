@@ -1,0 +1,34 @@
+version: '3.7'
+
+# Automated test compose file.
+
+services:
+  app:
+    image: lochnerr/chronyd
+    init:  true
+    restart: "no"
+    hostname: app.example.com
+    cap_add:
+      - SYS_TIME
+    networks:
+      testnet:
+        ipv4_address: 10.30.50.2
+  sut:
+    image: lochnerr/chronyd
+    command: /usr/local/bin/run-sut.sh
+    restart: "no"
+    hostname: sut.example.com
+    networks:
+      testnet:
+        ipv4_address: 10.30.50.3
+    depends_on:
+      - app
+
+networks:
+  testnet:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.30.50.0/24
+
