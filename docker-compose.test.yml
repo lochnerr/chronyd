@@ -1,11 +1,10 @@
-version: '3.7'
+version: '3'
 
 # Automated test compose file.
 
 services:
   app:
     image: lochnerr/chronyd
-    init:  true
     restart: "no"
     hostname: app.example.com
     cap_add:

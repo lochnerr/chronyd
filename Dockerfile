@@ -26,7 +26,7 @@ EXPOSE 123/tcp
 EXPOSE 323/tcp
 
 # Add packages.
-RUN apk add --update --no-cache chrony
+RUN apk add --update --no-cache chrony tini
 
 # Copy the unit test script.
 COPY bin/run-sut.sh /usr/local/bin
@@ -58,6 +58,9 @@ RUN mkdir -p /srv/chronyd/log \
 
 # Declare the volumes after setting up their content to preserve ownership.
 VOLUME [ "/srv/chronyd", "/ntp_signd" ]
+
+# Let's use tini.
+ENTRYPOINT ["/sbin/tini", "-v", "--"]
 
 # Run the daemon in the foreground.
 CMD ["/usr/sbin/chronyd", "-d", "-f", "/etc/chrony/chrony.conf"]
