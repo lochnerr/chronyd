@@ -18,6 +18,8 @@ services:
     command: /usr/local/bin/run-sut.sh
     restart: "no"
     hostname: sut.example.com
+    cap_add:
+      - SYS_TIME
     networks:
       testnet:
         ipv4_address: 10.30.50.3
