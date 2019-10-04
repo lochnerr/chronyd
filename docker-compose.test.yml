@@ -9,6 +9,8 @@ services:
     hostname: app.example.com
     cap_add:
       - SYS_TIME
+    volumes:
+      - chrony:/srv/chrony
     networks:
       testnet:
         ipv4_address: 10.30.50.2
@@ -19,11 +21,16 @@ services:
     hostname: sut.example.com
     cap_add:
       - SYS_TIME
+    volumes:
+      - chrony:/srv/chrony
     networks:
       testnet:
         ipv4_address: 10.30.50.3
     depends_on:
       - app
+
+volumes:
+  chrony:
 
 networks:
   testnet:

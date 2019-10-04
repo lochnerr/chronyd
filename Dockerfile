@@ -12,56 +12,47 @@ LABEL MAINTAINER Richard Lochner, Clone Research Corp. <lochner@clone1.com> \
 # for use with a Samba 4 Active Director Domain Controller.
 #
 # Volumes:
-#  * /srv/chronyd - directory for configuration and data files.
-#  * /ntp_signd - samba signing socket directory.
+#  * /srv/chrony - directory for configuration and data files.
+#  * /srv/ntp_signd - samba signing socket directory.
 #
 # Exposed ports:
 #  * 123 - Network Time Protocol
-#  * 323 - chrony daemon command port
 #
 # Linux capabilities required:
 #  * SYS_TIME - Set system clock
 
 EXPOSE 123/tcp
-EXPOSE 323/tcp
 
 # Add packages.
 RUN apk add --update --no-cache chrony tini
 
-# Copy the unit test script.
-COPY bin/run-sut.sh /usr/local/bin
+# Copy the local scripts.
+COPY bin/* /usr/local/bin/
 
 # Copy the assets to the container directory.
-COPY assets/* /srv/chronyd/
+COPY assets/* /srv/chrony/
 
-RUN mkdir -p /srv/chronyd/log \
+RUN true \
   # Save the original config file.
  && mv /etc/chrony/chrony.conf /etc/chrony/chrony-orig.conf \
-  # Generate a key for chronyd.
- && chronyc keygen 1 MD5 160 > /srv/chronyd/chrony.keys \
   # Fix the ownership for the container directory.
- && chown -R chrony:chrony /srv/chronyd \
+ && chown -R chrony:chrony /srv/chrony \
+ && chmod 750 /srv/chrony \
   # Create link to config.
  && ln -sf /srv/chronyd/chrony.conf /etc/chrony/chrony.conf \
-  # Create link to keys.
- && ln -sf /srv/chronyd/chrony.keys /etc/chrony/chrony.keys \
-  # Create link for driftfile.
- && rm -f /var/lib/chrony/chrony.drift \
- && ln -sf /srv/chronyd/chrony.drift /var/lib/chrony/chrony.drift \
-  # Create link to adjtime file.
- && ln -sf /srv/chronyd/adjtime /etc/adjtime \
   # Create signing directory.
- && mkdir -p /ntp_signd \
-  # Create link to signing directory.
- && mkdir -p /var/lib/samba/ntp_signd \
- && ln -sf /ntp_signd /var/lib/samba/ntp_signd
+ && mkdir -p /srv/ntp_signd \
+ && chown root:chrony /srv/ntp_signd \
+  # Make run directory.
+ && mkdir -p /var/run/chrony \
+ && chown chrony:chrony /var/run/chrony
 
 # Declare the volumes after setting up their content to preserve ownership.
-VOLUME [ "/srv/chronyd", "/ntp_signd" ]
+VOLUME [ "/srv/chrony", "/srv/ntp_signd" ]
 
 # Let's use tini.
 ENTRYPOINT ["/sbin/tini", "-v", "--"]
 
 # Run the daemon in the foreground.
-CMD ["/usr/sbin/chronyd", "-d", "-f", "/etc/chrony/chrony.conf"]
+CMD ["/usr/sbin/chronyd", "-d", "-f", "/srv/chrony/chrony.conf"]
 
