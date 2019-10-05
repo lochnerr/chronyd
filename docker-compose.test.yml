@@ -7,8 +7,13 @@ services:
     image: lochnerr/chronyd
     restart: "no"
     hostname: app.example.com
+    cap_drop:
+      - ALL
     cap_add:
-      - SYS_TIME
+      - net_bind_service
+      - setgid
+      - setuid
+      - sys_time
     volumes:
       - chrony:/srv/chrony
     networks:
@@ -19,8 +24,13 @@ services:
     command: /usr/local/bin/run-sut.sh
     restart: "no"
     hostname: sut.example.com
+    cap_drop:
+      - ALL
     cap_add:
-      - SYS_TIME
+      - net_bind_service
+      - setgid
+      - setuid
+      - sys_time
     volumes:
       - chrony:/srv/chrony
     networks:

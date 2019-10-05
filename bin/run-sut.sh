@@ -12,7 +12,7 @@ rc="0"
 # The following tests query the server to verify that it is running and syncing with its pool servers.
 
 # Query the sources.
-if chronyc -h /srv/chrony/chronyd.sock sources ; then
+if chronyc -h 10.30.50.2 sources ; then
   echo "The sources command succeeded!"
 else
   echo "The sources command failed!"
@@ -20,7 +20,7 @@ else
 fi
 
 # Query the tracking stats.
-if chronyc -h /srv/chrony/chronyd.sock tracking ; then
+if chronyc -h 10.30.50.2 tracking ; then
   echo "The tracking command succeeded!"
 else
   echo "The tracking command failed!"

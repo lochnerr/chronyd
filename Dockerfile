@@ -17,11 +17,13 @@ LABEL MAINTAINER Richard Lochner, Clone Research Corp. <lochner@clone1.com> \
 #
 # Exposed ports:
 #  * 123 - Network Time Protocol
+#  * 323 - chronyc command port.
 #
 # Linux capabilities required:
 #  * SYS_TIME - Set system clock
 
-EXPOSE 123/tcp
+EXPOSE 123/udp
+EXPOSE 323/udp
 
 # Add packages.
 RUN apk add --update --no-cache chrony tini
@@ -35,17 +37,22 @@ COPY assets/* /srv/chrony/
 RUN true \
   # Save the original config file.
  && mv /etc/chrony/chrony.conf /etc/chrony/chrony-orig.conf \
+  # Create log, run and dump directories.
+ && mkdir -p /srv/chrony/log \
+ && mkdir -p /srv/chrony/run \
+ && mkdir -p /srv/chrony/dump \
   # Fix the ownership for the container directory.
  && chown -R chrony:chrony /srv/chrony \
- && chmod 750 /srv/chrony \
+ && chmod 775 /srv/chrony \
+ && chmod 770 /srv/chrony/run \
   # Create link to config.
  && ln -sf /srv/chronyd/chrony.conf /etc/chrony/chrony.conf \
+  # Make run directory for pidfile.
+ && mkdir -p /var/run/chrony \
+ && chown root:chrony /var/run/chrony \
   # Create signing directory.
  && mkdir -p /srv/ntp_signd \
- && chown root:chrony /srv/ntp_signd \
-  # Make run directory.
- && mkdir -p /var/run/chrony \
- && chown chrony:chrony /var/run/chrony
+ && chown root:chrony /srv/ntp_signd
 
 # Declare the volumes after setting up their content to preserve ownership.
 VOLUME [ "/srv/chrony", "/srv/ntp_signd" ]
