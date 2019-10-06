@@ -31,35 +31,27 @@ RUN apk add --update --no-cache chrony tini
 # Copy the local scripts.
 COPY bin/* /usr/local/bin/
 
-# Copy the assets to the container directory.
-COPY assets/* /srv/chrony/
+# Copy the assets to the container.
+COPY assets/adjtime      /etc/
+COPY assets/chrony.conf  /etc/
+COPY assets/chrony.keys  /etc/
 
 RUN true \
   # Save the original config file.
  && mv /etc/chrony/chrony.conf /etc/chrony/chrony-orig.conf \
-  # Create log, run and dump directories.
- && mkdir -p /srv/chrony/log \
- && mkdir -p /srv/chrony/run \
- && mkdir -p /srv/chrony/dump \
-  # Fix the ownership for the container directory.
- && chown -R chrony:chrony /srv/chrony \
- && chmod 775 /srv/chrony \
- && chmod 770 /srv/chrony/run \
   # Create link to config.
- && ln -sf /srv/chronyd/chrony.conf /etc/chrony/chrony.conf \
-  # Make run directory for pidfile.
+ && ln -s /etc/chrony.conf /etc/chrony/chrony.conf \
+  # Make chrony run directory for socket.
  && mkdir -p /var/run/chrony \
- && chown root:chrony /var/run/chrony \
+ && chown chrony:chrony /var/run/chrony \
+ && chmod 760 /var/run/chrony \
   # Create signing directory.
  && mkdir -p /srv/ntp_signd \
  && chown root:chrony /srv/ntp_signd
 
 # Declare the volumes after setting up their content to preserve ownership.
-VOLUME [ "/srv/chrony", "/srv/ntp_signd" ]
-
-# Let's use tini.
-ENTRYPOINT ["/sbin/tini", "-v", "--"]
+VOLUME [ "/var/lib/chrony", "/srv/ntp_signd" ]
 
 # Run the daemon in the foreground.
-CMD ["/usr/sbin/chronyd", "-d", "-f", "/srv/chrony/chrony.conf"]
+CMD ["/usr/sbin/chronyd", "-d"]
 
