@@ -35,6 +35,7 @@ cat >/etc/chrony.conf <<-__EOF__
 	driftfile /var/lib/chrony/chrony.drift
 	makestep 1.0 3
 	logdir /var/log/chrony
+	pidfile /dev/null
 	__EOF__
 
 # Start the daemon.
