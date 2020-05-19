@@ -46,11 +46,11 @@ RUN true \
  && chown chrony:chrony /var/run/chrony \
  && chmod 760 /var/run/chrony \
   # Create signing directory.
- && mkdir -p /srv/ntp_signd \
- && chown root:chrony /srv/ntp_signd
+ && mkdir -p /var/lib/samba/ntp_signd \
+ && chown root:chrony /var/lib/samba/ntp_signd
 
 # Declare the volumes after setting up their content to preserve ownership.
-VOLUME [ "/var/lib/chrony", "/srv/ntp_signd" ]
+VOLUME [ "/var/lib/chrony", "/var/lib/samba/ntp_signd" ]
 
 # Run the daemon in the foreground.
 CMD ["/usr/sbin/chronyd", "-d"]
