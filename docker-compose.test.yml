@@ -7,6 +7,8 @@ services:
     image: lochnerr/chronyd
     restart: "no"
     hostname: app.example.com
+    environment:
+      - CMD_ALLOW=10.30.50.0/24
     cap_drop:
       - ALL
     cap_add:
@@ -15,8 +17,6 @@ services:
       - setuid
       - sys_time
       - dac_override
-    volumes:
-      - chrony:/srv/chrony
     networks:
       testnet:
         ipv4_address: 10.30.50.2
@@ -32,16 +32,11 @@ services:
       - setgid
       - setuid
       - sys_time
-    volumes:
-      - chrony:/srv/chrony
     networks:
       testnet:
         ipv4_address: 10.30.50.3
     depends_on:
       - app
-
-volumes:
-  chrony:
 
 networks:
   testnet:

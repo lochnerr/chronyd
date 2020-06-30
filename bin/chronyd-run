@@ -1,0 +1,51 @@
+#!/bin/sh
+
+# chrony-run: Run the chronyd time service.
+
+set -e
+
+# Open IP range for commands, if requested.
+
+if [ -n "$CMD_ALLOW" ]; then
+  echo "Opening ${CMD_ALLOW} network for commands."
+  sed -i \
+    "/bindcmdaddress.*sock$/a bindcmdaddress 0.0.0.0\ncmdallow ${CMD_ALLOW}" \
+    /etc/chrony/chrony.conf
+fi
+
+# Create a default configuration, if an empty /etc/chrony volume is attached.
+
+if [ ! -e /etc/chrony/chrony.conf ]; then
+  echo "Creating default configuration files."
+  cp -p /usr/share/chrony/chrony.conf /etc/chrony/
+  cp -p /usr/share/chrony/chrony.keys /etc/chrony/
+  cp -p /usr/share/chrony/adjtime     /etc/chrony/
+fi
+
+# Link /etc/chrony/adjtime, if necessary.
+
+if [ -e /etc/chrony/adjtime ]; then
+  echo "Linking to custom adjtime file."
+  ln -sf /etc/chrony/adjtime /etc/adjtime
+else
+  echo "Linking to default adjtime file."
+  ln -sf /usr/share/chrony/adjtime /etc/adjtime
+fi
+
+# Link default /etc/chrony/chrony.keys, if necessary.
+
+if [[ -L /etc/chrony/chrony.keys ]] || [[ ! -e /etc/chrony/chrony.keys ]] ; then
+  echo "Linking to default (empty) chrony.keys file."
+  ln -sf /usr/share/chrony/chrony.keys /etc/chrony/chrony.keys
+fi
+
+# Source run options, if available.
+
+[ -e /etc/chrony/options ] && . /etc/chrony/options
+
+[ -z "$OPTIONS" ] && OPTIONS="-d"
+
+# Execute the daemon.
+
+exec /usr/sbin/chronyd $OPTIONS
+

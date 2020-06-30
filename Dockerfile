@@ -12,8 +12,9 @@ LABEL MAINTAINER Richard Lochner, Clone Research Corp. <lochner@clone1.com> \
 # for use with a Samba 4 Active Director Domain Controller.
 #
 # Volumes:
-#  * /srv/chrony - directory for configuration and data files.
-#  * /srv/ntp_signd - samba signing socket directory.
+#  * /etc/chrony - directory for configuration and data files.
+#  * /var/lib/chrony - persistent data directory.
+#  * /var/lib/samba/ntp_signd - samba signing socket directory.
 #
 # Exposed ports:
 #  * 123 - Network Time Protocol
@@ -26,21 +27,21 @@ EXPOSE 123/udp
 EXPOSE 323/udp
 
 # Add packages.
-RUN apk add --update --no-cache chrony tini
+RUN apk add --update --no-cache chrony
 
 # Copy the local scripts.
 COPY bin/* /usr/local/bin/
 
 # Copy the assets to the container.
-COPY assets/adjtime      /etc/
-COPY assets/chrony.conf  /etc/
-COPY assets/chrony.keys  /etc/
+COPY assets/adjtime      /usr/share/chrony/
+COPY assets/chrony.conf  /usr/share/chrony/
+COPY assets/chrony.keys  /usr/share/chrony/
 
 RUN true \
   # Save the original config file.
  && mv /etc/chrony/chrony.conf /etc/chrony/chrony-orig.conf \
   # Create link to config.
- && ln -s /etc/chrony.conf /etc/chrony/chrony.conf \
+ && ln -s /usr/share/chrony/chrony.conf /etc/chrony/chrony.conf \
   # Make chrony run directory for socket.
  && mkdir -p /var/run/chrony \
  && chown chrony:chrony /var/run/chrony \
@@ -50,8 +51,8 @@ RUN true \
  && chown root:chrony /var/lib/samba/ntp_signd
 
 # Declare the volumes after setting up their content to preserve ownership.
-VOLUME [ "/var/lib/chrony", "/var/lib/samba/ntp_signd" ]
+VOLUME [ "/etc/chrony", "/var/lib/chrony", "/var/lib/samba/ntp_signd" ]
 
 # Run the daemon in the foreground.
-CMD ["/usr/sbin/chronyd", "-d"]
+CMD ["chronyd-run"]
 

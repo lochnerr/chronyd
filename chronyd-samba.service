@@ -1,0 +1,44 @@
+[Unit]
+Description=NTP client/server container under podman with minimal linux capabilities
+Documentation=man:chronyd(8) man:chrony.conf(5)
+After=ntpdate.service sntp.service ntpd.service
+Conflicts=ntpd.service systemd-timesyncd.service
+ConditionCapability=CAP_SYS_TIME
+
+[Service]
+Restart=on-failure
+RestartSec=120
+##EnvironmentFile=-/etc/sysconfig/chronyd
+ExecStartPre=-/usr/bin/rm -rf         /srv/chronyd/
+ExecStartPre=-/usr/bin/mkdir -p       /srv/chronyd/etc
+ExecStartPre=-/usr/bin/chmod 755      /srv/chronyd/etc
+ExecStartPre=-/usr/bin/chown root:101 /srv/chronyd/etc
+ExecStartPre=-/usr/bin/mkdir -p       /srv/chronyd/var
+ExecStartPre=-/usr/bin/chmod 770      /srv/chronyd/var
+ExecStartPre=-/usr/bin/chown root:101 /srv/chronyd/var
+ExecStartPre=-/usr/bin/mkdir -p       /var/lib/samba/ntp_signd
+ExecStartPre=-/usr/bin/chmod 750      /var/lib/samba/ntp_signd
+ExecStartPre=-/usr/bin/chown roor:101 /var/lib/samba/ntp_signd
+ExecStartPre=-/usr/bin/mkdir -p       /var/run/chronyd
+ExecStartPre=-/usr/bin/chmod 770      /var/run/chronyd
+ExecStartPre=-/usr/bin/chown 100:101  /var/run/chronyd
+ExecStartPre=-/usr/bin/rm -f          /var/run/chronyd/*
+ExecStartPre=-/usr/bin/podman rm -f --cidfile /%t/chronyd-cid
+# Note: Only the net_bind_service and sys_time capabilities are retained after the daemon drops to the chrony user.
+# -v         /var/run/chronyd:/var/run/chrony           \
+ExecStart=/usr/bin/podman run --conmon-pidfile /%t/chronyd-pid --cidfile /%t/chronyd-cid \
+ --cap-drop ALL --cap-add dac_override --cap-add net_bind_service --cap-add setgid --cap-add setuid --cap-add sys_time \
+ -p 123:123/udp -p 127.0.0.1:323:323/udp \
+ -v         /srv/chronyd/etc:/etc/chrony               \
+ -v         /srv/chronyd/var:/var/lib/chrony           \
+ -v /srv/samba/var/ntp_signd:/var/lib/samba/ntp_signd  \
+ --init --name chronyd -d lochnerr/chronyd
+##ExecStartPost=/usr/libexec/chrony-helper update-daemon
+ExecStop=/usr/bin/podman rm -f --cidfile /%t/chronyd-cid
+KillMode=none
+Type=forking
+PIDFile=/%t/chronyd-pid
+
+[Install]
+WantedBy=multi-user.target
+
