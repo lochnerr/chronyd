@@ -9,7 +9,6 @@ ConditionCapability=CAP_SYS_TIME
 Restart=on-failure
 RestartSec=120
 ##EnvironmentFile=-/etc/sysconfig/chronyd
-ExecStartPre=-/usr/bin/rm -rf         /srv/chronyd/
 ExecStartPre=-/usr/bin/mkdir -p       /srv/chronyd/etc
 ExecStartPre=-/usr/bin/chmod 755      /srv/chronyd/etc
 ExecStartPre=-/usr/bin/chown root:101 /srv/chronyd/etc
@@ -18,7 +17,7 @@ ExecStartPre=-/usr/bin/chmod 770      /srv/chronyd/var
 ExecStartPre=-/usr/bin/chown root:101 /srv/chronyd/var
 ExecStartPre=-/usr/bin/mkdir -p       /var/lib/samba/ntp_signd
 ExecStartPre=-/usr/bin/chmod 750      /var/lib/samba/ntp_signd
-ExecStartPre=-/usr/bin/chown roor:101 /var/lib/samba/ntp_signd
+ExecStartPre=-/usr/bin/chown root:101 /var/lib/samba/ntp_signd
 ExecStartPre=-/usr/bin/mkdir -p       /var/run/chronyd
 ExecStartPre=-/usr/bin/chmod 770      /var/run/chronyd
 ExecStartPre=-/usr/bin/chown 100:101  /var/run/chronyd
@@ -41,4 +40,3 @@ PIDFile=/%t/chronyd-pid
 
 [Install]
 WantedBy=multi-user.target
-

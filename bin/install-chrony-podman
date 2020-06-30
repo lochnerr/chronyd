@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -e
+
+sudo systemctl stop chronyd >/dev/null 2>&1 || :
+
+sudo cp -p chronyd-samba.service /usr/lib/systemd/system/
+sudo systemctl daemon-reload
+sudo rm -f /run/chronyd-samba.service-* /run/chronyd_samba.service-* /run/chronyd-cid /run/chronyd-pid
+#sudo podman rm -f chronyd
+sudo systemctl start chronyd-samba
+sudo systemctl status chronyd-samba
+
