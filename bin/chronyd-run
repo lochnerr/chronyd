@@ -4,6 +4,12 @@
 
 set -e
 
+# Display the container build date, if available.
+
+if [ -e /etc/container-build-date ]; then
+  echo "chronyd container built $(cat /etc/container-build-date)"
+fi
+
 # Open IP range for commands, if requested.
 
 if [ -n "$CMD_ALLOW" ]; then

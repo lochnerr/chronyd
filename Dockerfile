@@ -6,7 +6,8 @@ LABEL MAINTAINER Richard Lochner, Clone Research Corp. <lochner@clone1.com> \
       org.label-schema.vendor = "Clone Research Corp" \
       org.label-schema.usage = "https://github.com/lochnerr/chronyd" \
       org.label-schema.url = "https://certbot.eff.org/about/" \
-      org.label-schema.vcs-url = "https://github.com/lochnerr/chronyd.git"
+      org.label-schema.vcs-url = "https://github.com/lochnerr/chronyd.git" \
+      io.containers.autoupdate = "image"
 
 # A minimal chronyd (network time server) service that is suitable
 # for use with a Samba 4 Active Director Domain Controller.
@@ -52,6 +53,9 @@ RUN true \
 
 # Declare the volumes after setting up their content to preserve ownership.
 VOLUME [ "/etc/chrony", "/var/lib/chrony", "/var/lib/samba/ntp_signd" ]
+
+# Set the container build date.
+RUN date > /etc/container-build-date
 
 # Run the daemon in the foreground.
 CMD ["chronyd-run"]

@@ -1,13 +1,25 @@
 #!/bin/sh
 
+# install-chrony-podman: Install and start chrony-samba podman service.
+
 set -e
 
-sudo systemctl stop chronyd >/dev/null 2>&1 || :
+if [ "$(id -u)" != "0" ]; then
+  echo "Must be root!"
+  exit 1
+fi
 
-sudo cp -p chronyd-samba.service /usr/lib/systemd/system/
-sudo systemctl daemon-reload
-sudo rm -f /run/chronyd-samba.service-* /run/chronyd_samba.service-* /run/chronyd-cid /run/chronyd-pid
-#sudo podman rm -f chronyd
-sudo systemctl start chronyd-samba
-sudo systemctl status chronyd-samba
+# Stop and disable the local chronyd service in case it is running.
+systemctl stop    chronyd >/dev/null 2>&1 || :
+systemctl disable chronyd >/dev/null 2>&1 || :
+
+# Copy the service to the systemd library and reload, if necessary.
+if ! diff /usr/lib/systemd/system/chronyd-samba.service chronyd-samba.service >/dev/null 2>&1 ; then
+  echo "Reloading chronyd-samba service."
+  cp -p chronyd-samba.service /usr/lib/systemd/system/
+  systemctl daemon-reload
+fi
+
+# Start/restart chronyd-samba service.
+systemctl restart chronyd-samba
 

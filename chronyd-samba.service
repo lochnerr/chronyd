@@ -9,28 +9,30 @@ ConditionCapability=CAP_SYS_TIME
 Restart=on-failure
 RestartSec=120
 ##EnvironmentFile=-/etc/sysconfig/chronyd
-ExecStartPre=-/usr/bin/mkdir -p       /srv/chronyd/etc
-ExecStartPre=-/usr/bin/chmod 755      /srv/chronyd/etc
-ExecStartPre=-/usr/bin/chown root:101 /srv/chronyd/etc
-ExecStartPre=-/usr/bin/mkdir -p       /srv/chronyd/var
-ExecStartPre=-/usr/bin/chmod 770      /srv/chronyd/var
-ExecStartPre=-/usr/bin/chown root:101 /srv/chronyd/var
-ExecStartPre=-/usr/bin/mkdir -p       /var/lib/samba/ntp_signd
-ExecStartPre=-/usr/bin/chmod 750      /var/lib/samba/ntp_signd
-ExecStartPre=-/usr/bin/chown root:101 /var/lib/samba/ntp_signd
-ExecStartPre=-/usr/bin/mkdir -p       /var/run/chronyd
-ExecStartPre=-/usr/bin/chmod 770      /var/run/chronyd
-ExecStartPre=-/usr/bin/chown 100:101  /var/run/chronyd
-ExecStartPre=-/usr/bin/rm -f          /var/run/chronyd/*
-ExecStartPre=-/usr/bin/podman rm -f --cidfile /%t/chronyd-cid
+ExecStartPre=-mkdir -p       /srv/chronyd/etc
+ExecStartPre=-chmod 755      /srv/chronyd/etc
+ExecStartPre=-chown root:101 /srv/chronyd/etc
+ExecStartPre=-mkdir -p       /srv/chronyd/var
+ExecStartPre=-chmod 770      /srv/chronyd/var
+ExecStartPre=-chown root:101 /srv/chronyd/var
+ExecStartPre=-mkdir -p       /srv/samba/var/ntp_signd
+ExecStartPre=-chmod 750      /srv/samba/var/ntp_signd
+ExecStartPre=-chown root:101 /srv/samba/var/ntp_signd
+ExecStartPre=-mkdir -p       /run/chrony
+ExecStartPre=-chmod 770      /run/chrony
+ExecStartPre=-chown 100:101  /run/chrony
+ExecStartPre=-podman rm -f --cidfile /run/chronyd-cid
+ExecStartPre=-rm -f /run/chronyd-cid
+ExecStartPre=-rm -f /run/chrony/chronyd.pid
 # Note: Only the net_bind_service and sys_time capabilities are retained after the daemon drops to the chrony user.
-# -v         /var/run/chronyd:/var/run/chrony           \
+# Note: /run/chrony is mounted because that is where the chrony socket is created.
 ExecStart=/usr/bin/podman run --conmon-pidfile /%t/chronyd-pid --cidfile /%t/chronyd-cid \
  --cap-drop ALL --cap-add dac_override --cap-add net_bind_service --cap-add setgid --cap-add setuid --cap-add sys_time \
  -p 123:123/udp -p 127.0.0.1:323:323/udp \
  -v         /srv/chronyd/etc:/etc/chrony               \
  -v         /srv/chronyd/var:/var/lib/chrony           \
  -v /srv/samba/var/ntp_signd:/var/lib/samba/ntp_signd  \
+ -v              /run/chrony:/var/run/chrony           \
  --init --name chronyd -d lochnerr/chronyd
 ##ExecStartPost=/usr/libexec/chrony-helper update-daemon
 ExecStop=/usr/bin/podman rm -f --cidfile /%t/chronyd-cid
