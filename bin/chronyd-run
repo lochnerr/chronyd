@@ -7,8 +7,9 @@ set -e
 # Display the container build date, if available.
 
 if [ -e /etc/container-build-date ]; then
-  echo "chronyd container built $(cat /etc/container-build-date)"
+  echo "Container built on:   $(cat /etc/container-build-date)."
 fi
+echo "Local system time is: $(date)."
 
 # Open IP range for commands, if requested.
 
