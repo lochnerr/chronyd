@@ -6,8 +6,7 @@ LABEL MAINTAINER Richard Lochner, Clone Research Corp. <lochner@clone1.com> \
       org.label-schema.vendor = "Clone Research Corp" \
       org.label-schema.usage = "https://github.com/lochnerr/chronyd" \
       org.label-schema.url = "https://certbot.eff.org/about/" \
-      org.label-schema.vcs-url = "https://github.com/lochnerr/chronyd.git" \
-      io.containers.autoupdate = "image"
+      org.label-schema.vcs-url = "https://github.com/lochnerr/chronyd.git"
 
 # A minimal chronyd (network time server) service that is suitable
 # for use with a Samba 4 Active Director Domain Controller.
