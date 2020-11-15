@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# run-chronyd-service: Install and run container-chronyd podman service.
+# start-chronyd-service: Install or update container-chronyd podman service, if necessary, and start it.
 
 set -e
 
