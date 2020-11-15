@@ -1,11 +1,12 @@
 [Unit]
-Description=NTP client/server container under podman with minimal linux capabilities
+Description=Chrony server container under podman with minimal linux capabilities
 Documentation=man:chronyd(8) man:chrony.conf(5)
 After=ntpdate.service sntp.service ntpd.service
 Conflicts=ntpd.service systemd-timesyncd.service
 ConditionCapability=CAP_SYS_TIME
 
 [Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
 Restart=on-failure
 RestartSec=120
 ##EnvironmentFile=-/etc/sysconfig/chronyd
@@ -21,12 +22,11 @@ ExecStartPre=-chown root:101 /srv/samba/var/ntp_signd
 ExecStartPre=-mkdir -p       /run/chrony
 ExecStartPre=-chmod 770      /run/chrony
 ExecStartPre=-chown 100:101  /run/chrony
-ExecStartPre=-podman rm -f --cidfile /run/chronyd-cid
-ExecStartPre=-rm -f /run/chronyd-cid
 ExecStartPre=-rm -f /run/chrony/chronyd.pid
+ExecStartPre=/bin/rm -f %t/container-chronyd.pid %t/container-chronyd.ctr-id
 # Note: Only the net_bind_service and sys_time capabilities are retained after the daemon drops to the chrony user.
 # Note: /run/chrony is mounted because that is where the chrony socket is created.
-ExecStart=/usr/bin/podman run --conmon-pidfile /%t/chronyd-pid --cidfile /%t/chronyd-cid \
+ExecStart=/usr/bin/podman run --conmon-pidfile %t/container-chronyd.pid --cidfile %t/container-chronyd.ctr-id --cgroups=no-conmon --replace \
  --cap-drop ALL --cap-add dac_override --cap-add net_bind_service --cap-add setgid --cap-add setuid --cap-add sys_time \
  -p 123:123/udp -p 127.0.0.1:323:323/udp \
  -v         /srv/chronyd/etc:/etc/chrony               \
@@ -35,10 +35,11 @@ ExecStart=/usr/bin/podman run --conmon-pidfile /%t/chronyd-pid --cidfile /%t/chr
  -v              /run/chrony:/var/run/chrony           \
  --init --name chronyd -d lochnerr/chronyd
 ##ExecStartPost=/usr/libexec/chrony-helper update-daemon
-ExecStop=/usr/bin/podman rm -f --cidfile /%t/chronyd-cid
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/container-chronyd.ctr-id -t 10
+ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/container-chronyd.ctr-id
+PIDFile=%t/container-chronyd.pid
 KillMode=none
 Type=forking
-PIDFile=/%t/chronyd-pid
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=multi-user.target default.target

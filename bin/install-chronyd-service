@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# install-chrony-podman: Install and start chrony-samba podman service.
+# install-chronyd-service: Install and start container-chronyd service.
 
 set -e
 
@@ -9,14 +9,20 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 
+# Make sure the local service definition is available.
+if [ ! -e container-chronyd.service ]; then
+  echo "Error: File container-chronyd.service not found."
+  exit 1
+fi
+
 # Stop and disable the local chronyd service in case it is running.
 systemctl stop    chronyd >/dev/null 2>&1 || :
 systemctl disable chronyd >/dev/null 2>&1 || :
 
 # Copy the service to the systemd library and reload, if necessary.
-if ! diff /usr/lib/systemd/system/chronyd-samba.service chronyd-samba.service >/dev/null 2>&1 ; then
+if ! diff /usr/lib/systemd/system/container-chronyd.service container-chronyd.service >/dev/null 2>&1 ; then
   echo "Reloading chronyd-samba service."
-  cp -p chronyd-samba.service /usr/lib/systemd/system/
+  cp -p container-chronyd.service /usr/lib/systemd/system/
   systemctl daemon-reload
 fi
 
