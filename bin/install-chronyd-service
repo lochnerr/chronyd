@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# install-chronyd-service: Install and start container-chronyd service.
+# install-chronyd-service: Install and start container-chronyd podman service.
 
 set -e
 
@@ -21,11 +21,11 @@ systemctl disable chronyd >/dev/null 2>&1 || :
 
 # Copy the service to the systemd library and reload, if necessary.
 if ! diff /usr/lib/systemd/system/container-chronyd.service container-chronyd.service >/dev/null 2>&1 ; then
-  echo "Reloading chronyd-samba service."
+  echo "Reloading container-chronyd service."
   cp -p container-chronyd.service /usr/lib/systemd/system/
   systemctl daemon-reload
 fi
 
-# Start/restart chronyd-samba service.
-systemctl restart chronyd-samba
+# Start/restart container-chronyd service.
+systemctl restart container-chronyd.service
 
