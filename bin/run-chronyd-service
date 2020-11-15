@@ -26,6 +26,9 @@ if ! diff /usr/lib/systemd/system/container-chronyd.service container-chronyd.se
   systemctl daemon-reload
 fi
 
+# Update the container image.
+podman pull docker.io/lochnerr/chronyd
+
 # Start/restart container-chronyd service.
 systemctl restart container-chronyd.service
 
