@@ -1,8 +1,18 @@
 #!/bin/sh
 
-# install-chronyd-service: Install and start container-chronyd podman service.
+# run-chronyd-service: Install and run container-chronyd podman service.
 
 set -e
+
+SERVICE="container-chronyd.service"
+IMAGE="docker.io/lochnerr/chronyd"
+
+before_service_start() {
+
+  # Disable and stop the local chronyd service in case it is running.
+  systemctl disable chronyd >/dev/null 2>&1 || :
+  systemctl stop    chronyd >/dev/null 2>&1 || :
+}
 
 if [ "$(id -u)" != "0" ]; then
   echo "Must be root!"
@@ -10,25 +20,25 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 # Make sure the local service definition is available.
-if [ ! -e container-chronyd.service ]; then
-  echo "Error: File container-chronyd.service not found."
+if [ ! -e $SERVICE ]; then
+  echo "Error: File $SERVICE not found."
   exit 1
 fi
 
-# Stop and disable the local chronyd service in case it is running.
-systemctl stop    chronyd >/dev/null 2>&1 || :
-systemctl disable chronyd >/dev/null 2>&1 || :
+# Update the container image.
+podman pull $IMAGE
 
-# Copy the service to the systemd library and reload, if necessary.
-if ! diff /usr/lib/systemd/system/container-chronyd.service container-chronyd.service >/dev/null 2>&1 ; then
-  echo "Reloading container-chronyd service."
-  cp -p container-chronyd.service /usr/lib/systemd/system/
+# Copy the service to the systemd library and reload, if it has changed.
+if ! diff /usr/lib/systemd/system/$SERVICE $SERVICE >/dev/null 2>&1 ; then
+  echo "Reloading $SERVICE."
+  cp -p $SERVICE /usr/lib/systemd/system/
   systemctl daemon-reload
 fi
 
-# Update the container image.
-podman pull docker.io/lochnerr/chronyd
+before_service_start
 
-# Start/restart container-chronyd service.
-systemctl restart container-chronyd.service
+# Start/restart the service.
+systemctl restart $SERVICE
+
+echo "$(basename $0) exiting normally."
 
