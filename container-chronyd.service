@@ -10,19 +10,6 @@ Environment=PODMAN_SYSTEMD_UNIT=%n
 Restart=on-failure
 RestartSec=120
 ##EnvironmentFile=-/etc/sysconfig/chronyd
-ExecStartPre=-mkdir -p       /srv/chronyd/etc
-ExecStartPre=-chmod 755      /srv/chronyd/etc
-ExecStartPre=-chown root:101 /srv/chronyd/etc
-ExecStartPre=-mkdir -p       /srv/chronyd/var
-ExecStartPre=-chmod 770      /srv/chronyd/var
-ExecStartPre=-chown root:101 /srv/chronyd/var
-ExecStartPre=-mkdir -p       /srv/samba/var/ntp_signd
-ExecStartPre=-chmod 750      /srv/samba/var/ntp_signd
-ExecStartPre=-chown root:101 /srv/samba/var/ntp_signd
-ExecStartPre=-mkdir -p       /run/chrony
-ExecStartPre=-chmod 770      /run/chrony
-ExecStartPre=-chown 100:101  /run/chrony
-ExecStartPre=-rm -f /run/chrony/chronyd.pid
 ExecStartPre=/bin/rm -f %t/container-chronyd.pid %t/container-chronyd.ctr-id
 # Note: Only the net_bind_service and sys_time capabilities are retained after the daemon drops to the chrony user.
 # Note: /run/chrony is mounted because that is where the chrony socket is created.

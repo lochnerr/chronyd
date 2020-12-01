@@ -9,6 +9,26 @@ IMAGE="docker.io/lochnerr/chronyd"
 
 before_service_start() {
 
+  # Make sure the persistent directories are properly setup.
+
+  mkdir -p       /srv/chronyd/etc
+  chmod 755      /srv/chronyd/etc
+  chown root:101 /srv/chronyd/etc
+
+  mkdir -p       /srv/chronyd/var
+  chmod 770      /srv/chronyd/var
+  chown root:101 /srv/chronyd/var
+
+  mkdir -p       /srv/samba/var/ntp_signd
+  chmod 750      /srv/samba/var/ntp_signd
+  chown root:101 /srv/samba/var/ntp_signd
+
+  mkdir -p       /run/chrony
+  chmod 770      /run/chrony
+  chown 100:101  /run/chrony
+
+  rm -f /run/chrony/chronyd.pid
+
   # Disable and stop the local chronyd service in case it is running.
   systemctl disable chronyd >/dev/null 2>&1 || :
   systemctl stop    chronyd >/dev/null 2>&1 || :
