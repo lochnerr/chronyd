@@ -14,7 +14,7 @@ ExecStartPre=/bin/rm -f %t/container-chronyd.pid %t/container-chronyd.ctr-id
 # Note: Only the net_bind_service and sys_time capabilities are retained after the daemon drops to the chrony user.
 # Note: /run/chrony is mounted because that is where the chrony socket is created.
 ExecStart=/usr/bin/podman run --conmon-pidfile %t/container-chronyd.pid --cidfile %t/container-chronyd.ctr-id --cgroups=no-conmon --replace \
- --cap-drop ALL --cap-add dac_override --cap-add net_bind_service --cap-add setgid --cap-add setuid --cap-add sys_time \
+ --cap-add dac_override --cap-add net_bind_service --cap-add setgid --cap-add setuid --cap-add sys_time \
  -p 123:123/udp -p 127.0.0.1:323:323/udp \
  -v         /srv/chronyd/etc:/etc/chrony               \
  -v         /srv/chronyd/var:/var/lib/chrony           \
