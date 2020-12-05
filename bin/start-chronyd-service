@@ -45,9 +45,6 @@ if [ ! -e $SERVICE ]; then
   exit 1
 fi
 
-# Update the container image.
-podman pull $IMAGE
-
 # Copy the service to the systemd library and reload, if it has changed.
 if ! diff /usr/lib/systemd/system/$SERVICE $SERVICE >/dev/null 2>&1 ; then
   echo "Reloading $SERVICE."
