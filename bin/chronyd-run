@@ -7,9 +7,9 @@ set -e
 # Display the container build date, if available.
 
 if [ -e /etc/container-build-date ]; then
-  echo "Container built on:   $(cat /etc/container-build-date)."
+  echo "Container build time: $(cat /etc/container-build-date)."
 fi
-echo "Local system time is: $(date)."
+echo "Container start time: $(date)."
 
 # Open IP range for commands, if requested.
 
@@ -27,6 +27,7 @@ if [ ! -e /etc/chrony/chrony.conf ]; then
   cp -p /usr/share/chrony/chrony.conf /etc/chrony/
   cp -p /usr/share/chrony/chrony.keys /etc/chrony/
   cp -p /usr/share/chrony/adjtime     /etc/chrony/
+  echo "OPTIONS='-d -x'" >/etc/chrony/options
 fi
 
 # Link /etc/chrony/adjtime, if necessary.
@@ -37,13 +38,6 @@ if [ -e /etc/chrony/adjtime ]; then
 else
   echo "Linking to default adjtime file."
   ln -sf /usr/share/chrony/adjtime /etc/adjtime
-fi
-
-# Link default /etc/chrony/chrony.keys, if necessary.
-
-if [[ -L /etc/chrony/chrony.keys ]] || [[ ! -e /etc/chrony/chrony.keys ]] ; then
-  echo "Linking to default (empty) chrony.keys file."
-  ln -sf /usr/share/chrony/chrony.keys /etc/chrony/chrony.keys
 fi
 
 # Source run options, if available.
