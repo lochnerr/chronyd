@@ -40,12 +40,6 @@ else
   ln -sf /usr/share/chrony/adjtime /etc/adjtime
 fi
 
-# Fixup ownership and permissions for directory /var/run/chrony.
-
-mkdir -p /var/run/chrony
-chown chrony:chrony /var/run/chrony
-chmod 760 /var/run/chrony
-
 # Source run options, if available.
 
 [ -e /etc/chrony/options ] && . /etc/chrony/options

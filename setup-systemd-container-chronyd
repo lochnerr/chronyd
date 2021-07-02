@@ -40,6 +40,8 @@ create_directory $PFX/srv/chronyd     770
 create_directory $PFX/srv/chronyd/etc 770
 create_directory $PFX/srv/chronyd/var 770
 
+create_directory $PFX/srv/samba/var/ntp_signd  750
+
 # Make sure the group ownership is correct.
 
 podman unshare chgrp $CHRONY_GROUP  $PFX/srv/chronyd/var
@@ -52,7 +54,7 @@ podman unshare chgrp $CHRONY_GROUP  $PFX/srv/samba/var/ntp_signd
 
 # If the container is running, kill it.
 
-podman rm -f chronyd
+podman rm -f chronyd >/dev/null 2>&1 || :
 
 # Run the container.
 

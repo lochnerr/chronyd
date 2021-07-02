@@ -15,7 +15,6 @@ LABEL MAINTAINER Richard Lochner, Clone Research Corp. <lochner@clone1.com> \
 #  * /etc/chrony - directory for configuration and data files.
 #  * /var/lib/chrony - persistent data directory.
 #  * /var/lib/samba/ntp_signd - samba signing socket directory.
-#  * /var/run/chrony - directory for the command socket.
 #
 # Exposed ports:
 #  * 123 - Network Time Protocol
@@ -56,7 +55,7 @@ RUN true \
  && chown root:chrony /var/lib/samba/ntp_signd
 
 # Declare the volumes after setting up their content to preserve ownership.
-VOLUME [ "/etc/chrony", "/var/lib/chrony", "/var/lib/samba/ntp_signd", "/var/run/chrony" ]
+VOLUME [ "/etc/chrony", "/var/lib/chrony", "/var/lib/samba/ntp_signd" ]
 
 # Set the container build date.
 RUN date > /etc/container-build-date
