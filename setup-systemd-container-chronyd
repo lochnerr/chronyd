@@ -1,0 +1,87 @@
+#!/bin/sh
+
+set -xe
+
+# Setup systemd containerized chronyd.
+
+# This will setup a root or a non-root unit.
+
+if [ "$(id -u)" = "0" ]; then
+  # Running as root.
+  PFX=""
+  MODE=""
+  UNIT_DIR="/usr/lib/systemd/system/"
+else
+  # Running as non-root.
+  PFX="/home/$(id -un)"
+  MODE="--user"
+  mkdir -p /home/$(id -un)/.config/systemd/user
+  UNIT_DIR="/home/$(id -un)/.config/systemd/user/"
+fi
+
+# On Alpine chrony group is 101.
+CHRONY_GROUP="101"
+
+create_directory() {
+
+  dir="$1"
+  perm="$2"
+
+  if [ ! -d $dir ]; then
+    echo "Creating dircetory ${dir}."
+    mkdir -p    $dir
+    chmod $perm $dir
+  fi
+}
+
+# Setup directories, if needed.
+
+create_directory $PFX/srv/chronyd     770
+create_directory $PFX/srv/chronyd/etc 770
+create_directory $PFX/srv/chronyd/var 770
+
+# Make sure the group ownership is correct.
+
+podman unshare chgrp $CHRONY_GROUP  $PFX/srv/chronyd/var
+
+# TODO The $PFX/srv/samba/var/ntp_signd directory should be owned by root, not this
+# unprivileged user. It will be used by the samba-dc which will be running in a root
+# context.  The samba process will need to deal with this.
+
+podman unshare chgrp $CHRONY_GROUP  $PFX/srv/samba/var/ntp_signd
+
+# If the container is running, kill it.
+
+podman rm -f chronyd
+
+# Run the container.
+
+# TODO Might want to add an option to use privileged ports if running as root.
+
+podman run \
+ -p 5123:123/udp -p 5323:323/udp \
+ -v         $PFX/srv/chronyd/etc:/etc/chrony               \
+ -v         $PFX/srv/chronyd/var:/var/lib/chrony           \
+ -v $PFX/srv/samba/var/ntp_signd:/var/lib/samba/ntp_signd  \
+ --init --name chronyd -d lochnerr/chronyd
+
+# Generate the systemd unit with podman.
+
+podman generate systemd -f -n chronyd --new
+
+# Save the systemd unit file.
+
+cp -p container-chronyd.service  $UNIT_DIR
+
+# Don't need the container now that the unit has been generated.
+
+podman stop --ignore chronyd
+podman rm   --ignore chronyd
+
+# Bring up the service!
+
+systemctl $MODE daemon-reload
+systemctl $MODE start container-chronyd
+
+exit 0
+
