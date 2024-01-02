@@ -1,0 +1,61 @@
+#!/bin/sh
+
+# start-chronyd-service: Install or update container-chronyd podman service, if necessary, and start it.
+
+set -e
+
+SERVICE="container-chronyd.service"
+IMAGE="docker.io/lochnerr/chronyd"
+
+before_service_start() {
+
+  # Make sure the persistent directories are properly setup.
+
+  mkdir -p       /srv/chronyd/etc
+  chmod 755      /srv/chronyd/etc
+  chown root:101 /srv/chronyd/etc
+
+  mkdir -p       /srv/chronyd/var
+  chmod 770      /srv/chronyd/var
+  chown root:101 /srv/chronyd/var
+
+  mkdir -p       /srv/samba/var/ntp_signd
+  chmod 750      /srv/samba/var/ntp_signd
+  chown root:101 /srv/samba/var/ntp_signd
+
+  mkdir -p       /run/chrony
+  chmod 770      /run/chrony
+  chown 100:101  /run/chrony
+
+  rm -f /run/chrony/chronyd.pid
+
+  # Disable and stop the local chronyd service in case it is running.
+  systemctl disable chronyd >/dev/null 2>&1 || :
+  systemctl stop    chronyd >/dev/null 2>&1 || :
+}
+
+if [ "$(id -u)" != "0" ]; then
+  echo "Must be root!"
+  exit 1
+fi
+
+# Make sure the local service definition is available.
+if [ ! -e $SERVICE ]; then
+  echo "Error: File $SERVICE not found."
+  exit 1
+fi
+
+# Copy the service to the systemd library and reload, if it has changed.
+if ! diff /usr/lib/systemd/system/$SERVICE $SERVICE >/dev/null 2>&1 ; then
+  echo "Reloading $SERVICE."
+  cp -p $SERVICE /usr/lib/systemd/system/
+  systemctl daemon-reload
+fi
+
+before_service_start
+
+# Start/restart the service.
+systemctl restart $SERVICE
+
+echo "$(basename $0) exiting normally."
+
